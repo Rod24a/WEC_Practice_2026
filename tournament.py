@@ -69,9 +69,10 @@ class Node:
                 return False
 
             self.is_active_matchup = False
-            
+            loser = self.right.current_name if (winner == self.left.current_name) else self.left.current_name
+
             # successfully completed match with winner
-            global_text_buffer += f"Player {winner} won matchup #{matchup_id}!\n"
+            global_text_buffer += f"Player {winner} won matchup #{matchup_id}! {loser} is eliminated.\n"
             self.current_name = winner
             if self.parent:
                 self.parent.check_new_matchup()

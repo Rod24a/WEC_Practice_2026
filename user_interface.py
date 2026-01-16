@@ -41,7 +41,7 @@ def submit_match_results():
     match_results = match_result_text.get("1.0", END).strip()
     output_text.insert(END, f"Match results submitted:\n{match_results}\n")
 
-#create the main window
+#main window
 window = Tk()
 window.title("Tournament Bracket Generator")
 window.geometry("1000x900")
@@ -52,7 +52,7 @@ left_frame.pack(side='left', padx=40, pady=20)
 
 # Create right frame for output text box
 right_frame = Frame(window)
-right_frame.pack(side='right', padx=100, pady=20)
+right_frame.pack(side='right', padx=20, pady=20)
 
 label = Label(left_frame, text="Welcome to the Tournament Bracket Generator!", font=("Arial", 12))
 label.pack(pady=20)

@@ -12,6 +12,7 @@ class Node:
         self.parent = parent
 
         self.matchup_index = -1
+        self.is_active_matchup = False
     
     def create_from_leaves(self, leaf_list):
         # list given as [['7 guy', '6 guy'], ['5guys', '4man'], ['3man', '2man'], 'BEST MAN']
@@ -63,26 +64,44 @@ class Node:
             return f"[{self.left}, {self.right}]"
     
     def declare_matchup_winner(self, matchup_id, winner):
-        # print(f"AAAA my index is {self.matchup_index}")
+        global all_matchup_index
+        output = False
+
+        if not (1 <= matchup_id and matchup_id < all_matchup_index):
+            # outside valid range!
+            print(f"Matchup ID invalid! matchup_id={matchup_id}")
+            return False
+        
+
+        
         if self.matchup_index == matchup_id:
             # found matchup! make winner 
             # VERIFY IF WINNER IS ONE OF THE COMPETITORS
+            if not self.is_active_matchup:
+                # id matches but not active, INVALID
+                return False
             if winner != self.left.current_name and winner != self.right.current_name:
-                print(f"Invalid name! No '{winner}' found in matchup #{matchup_id}")
+                # id matches, but no correct winner name. INVALID
                 return False
 
             
+            # successfully completed match with winner
             self.current_name = winner
             if self.parent:
                 self.parent.check_new_matchup()
 
+            self.is_active_matchup = False
+            return True
         else:
             # check nodes
             if self.left:
-                self.left.declare_matchup_winner(matchup_id, winner)
-            if self.right:
-                self.right.declare_matchup_winner(matchup_id, winner)
+                output = self.left.declare_matchup_winner(matchup_id, winner)
+            if not output and self.right:
+                output = self.right.declare_matchup_winner(matchup_id, winner)
+            
+            return output
     
+        print(f"Invalid name! No '{winner}' found in matchup #{matchup_id}")
     def check_new_matchup(self):
         global all_matchup_index
         # print(f"checking new matchup")
@@ -95,6 +114,7 @@ class Node:
             # print("no2")
             return
         
+        self.is_active_matchup = True
         self.matchup_index = all_matchup_index
         all_matchup_index += 1
         print(f"New Matchup #{self.matchup_index}: {self.left.current_name} VS {self.right.current_name}!")

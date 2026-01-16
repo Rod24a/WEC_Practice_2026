@@ -1,6 +1,7 @@
 import math
 
 all_matchup_index = 1
+global_text_buffer = ""
 
 # simple binary tree node class for binary tree with only leaf nodes
 class Node:
@@ -25,27 +26,13 @@ class Node:
             self.right = Node(self)
             self.right.create_from_leaves(leaf_list[len(leaf_list)//2:])
 
-            # if nodes both nodes are leaf nodes, create matchup in this node!
-            # if self.left.current_name != "" and self.right.current_name != "":
-            #     # create matchup in this node
-            #     self.matchup_index = all_matchup_index
-            #     all_matchup_index += 1
-
-            # create matchup index in this node - no matter what
-            # self.matchup_index = all_matchup_index
-            # all_matchup_index += 1
-
 
         elif (len(leaf_list) == 1 and type(leaf_list[0]) == list):
-            
+            # node is a manually made double matchup
             self.left = Node(self)
             self.left.create_from_leaves([leaf_list[0][0]])
             self.right = Node(self)
             self.right.create_from_leaves([leaf_list[0][1]])
-
-            # if nodes both nodes are leaf nodes, create matchup
-            # self.matchup_index = all_matchup_index
-            # all_matchup_index += 1
 
         else:
             # you are a leaf node, just set name
@@ -54,26 +41,23 @@ class Node:
             
 
     def __str__(self):
-        # if self.left == None and self.right == None:
-        #     return self.current_name
-        # else:
-        #     return f"[{self.left}, {self.right}]"
         if self.current_name != "":
             return self.current_name
         else:
             return f"[{self.left}, {self.right}]"
     
     def declare_matchup_winner(self, matchup_id, winner):
-        global all_matchup_index
+        global all_matchup_index, global_text_buffer
         output = False
 
         if not (1 <= matchup_id and matchup_id < all_matchup_index):
             # outside valid range!
-            print(f"Matchup ID invalid! matchup_id={matchup_id}")
+            # print(f"Matchup ID invalid! matchup_id={matchup_id}")
+            global_text_buffer += f"Matchup ID invalid! matchup_id={matchup_id}\n"
             return False
         
 
-        
+
         if self.matchup_index == matchup_id:
             # found matchup! make winner 
             # VERIFY IF WINNER IS ONE OF THE COMPETITORS
@@ -84,13 +68,17 @@ class Node:
                 # id matches, but no correct winner name. INVALID
                 return False
 
+            self.is_active_matchup = False
             
             # successfully completed match with winner
+            global_text_buffer += f"Player {winner} won matchup #{matchup_id}!\n"
             self.current_name = winner
             if self.parent:
                 self.parent.check_new_matchup()
+            else:
+                # no parent! This is the winner!
+                global_text_buffer += f"Player {winner} has won the tournament!"
 
-            self.is_active_matchup = False
             return True
         else:
             # check nodes
@@ -103,7 +91,7 @@ class Node:
     
         print(f"Invalid name! No '{winner}' found in matchup #{matchup_id}")
     def check_new_matchup(self):
-        global all_matchup_index
+        global all_matchup_index, global_text_buffer
         # print(f"checking new matchup")
         # check and print if your two nodes have two competitiors, and print
         if not self.left or not self.right:
@@ -117,13 +105,10 @@ class Node:
         self.is_active_matchup = True
         self.matchup_index = all_matchup_index
         all_matchup_index += 1
-        print(f"New Matchup #{self.matchup_index}: {self.left.current_name} VS {self.right.current_name}!")
+        # print(f"New Matchup #{self.matchup_index}: {self.left.current_name} VS {self.right.current_name}!")
+        global_text_buffer += f"New Matchup #{self.matchup_index}: {self.left.current_name} VS {self.right.current_name}!\n"
+        
 
-    # def get_leaves(self):
-    #     if self.name != "":
-    #         return [self.name]
-    #     else:
-    #         return [self.left, self.right]
 
 class Tournament:
 
@@ -174,31 +159,43 @@ class Tournament:
         self.root.create_from_leaves(self.bracket)
 
     def declare_matchup_winner(self, matchup_id, name):
-        self.root.declare_matchup_winner(matchup_id, name)
+        result = self.root.declare_matchup_winner(matchup_id, name)
 
-print("\n>>Initializing and adding players...")
-myTourny = Tournament()
-# myTourny.add_players(["BEST MAN", "2man", "3man", "4man", "5guys", "6 guy", "7 guy", "8"])
-myTourny.add_players(["BEST MAN", "2man", "3man", "4man", "5guys"])
-myTourny.start_single_elimination()
-print("Curent bracket:", myTourny.root)
+    def get_output_buffer(self):
+        global global_text_buffer
+        output = global_text_buffer
+        global_text_buffer = ""
+        return output
+    
 
-print("\n>>Setting winner in #1: '4man'")
-myTourny.declare_matchup_winner(1, "4man")
-print("Curent bracket:", myTourny.root)
+if __name__ == '__main__':
+    print("\n>> Initializing and adding players...")
+    myTourny = Tournament()
+    # myTourny.add_players(["BEST MAN", "2man", "3man", "4man", "5guys", "6 guy", "7 guy", "8"])
+    myTourny.add_players(["BEST MAN", "2man", "3man", "4man", "5guys"])
+    myTourny.start_single_elimination()
+    print(myTourny.get_output_buffer())
+    print("Curent bracket:", myTourny.root)
 
-print("\n>>Setting winner in #2: 'somebody'")
-myTourny.declare_matchup_winner(2, "somebody")
-print("Curent bracket:", myTourny.root)
+    print("\n>> Setting winner in #1: '4man'")
+    myTourny.declare_matchup_winner(1, "4man")
+    print("Curent bracket:", myTourny.root)
 
-print("\n>>Setting winner in #2: '2man'")
-myTourny.declare_matchup_winner(2, "2man")
-print("Curent bracket:", myTourny.root)
+    print("\n>> Setting winner in #2: 'somebody'")
+    myTourny.declare_matchup_winner(2, "somebody")
+    print("Curent bracket:", myTourny.root)
 
-print("\n>>Setting winner in #3: '3man'")
-myTourny.declare_matchup_winner(3, "3man")
-print("Curent bracket:", myTourny.root)
+    print("\n>> Setting winner in #2: '2man'")
+    myTourny.declare_matchup_winner(2, "2man")
+    print("Curent bracket:", myTourny.root)
 
-print("\n>>Setting winner in #4: '3man'")
-myTourny.declare_matchup_winner(4, "3man")
-print("Curent bracket:", myTourny.root)
+    print("\n>> Setting winner in #3: '3man'")
+    myTourny.declare_matchup_winner(3, "3man")
+    print("Curent bracket:", myTourny.root)
+
+    print("\n>> Setting winner in #4: '3man'")
+    myTourny.declare_matchup_winner(4, "3man")
+    print("Curent bracket:", myTourny.root)
+
+
+    print(myTourny.get_output_buffer())

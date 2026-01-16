@@ -29,12 +29,18 @@ def number_of_players():
         num_players = None
 
 def get_player_names():
-    global player_names
+    global player_names, num_players
     text = players_text.get("1.0", END).strip()
     player_names = [line.strip() for line in text.split('\n') if line.strip()]
     output_text.insert(END, f"Player names retrieved: {player_names}\n")
-    if num_players and len(player_names) != num_players:
-        output_text.insert(END, f"Warning: Number of names ({len(player_names)}) doesn't match the set number of players ({num_players}).\n")
+    # check if there are duplicate names - there shouldnt be!
+    if len(player_names) != len(set(player_names)):
+        output_text.insert(END, f"ERROR: Name list contains duplicate names. Please make all names unique.\n")
+        return
+
+    # if num_players and len(player_names) != num_players:
+    #     output_text.insert(END, f"Warning: Number of names ({len(player_names)}) doesn't match the set number of players ({num_players}).\n")
+    num_players = len(player_names)
 
 def submit_match_results():
     global match_results
